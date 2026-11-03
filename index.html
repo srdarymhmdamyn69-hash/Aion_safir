@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>آیون سفیر</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#f4f7f6;--card:#fff;--ink:#12302e;--mute:#5d7573;--line:#d9e3e1;--brand:#0f6b63;--brand-ink:#fff;--accent:#f5b428;--err:#c0392b;--ok:#1f9d55;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1a19;--card:#152826;--ink:#e8f3f1;--mute:#93aeab;--line:#26403d;--brand:#2fb5a8;--brand-ink:#06201d;--accent:#f5b428;--err:#ff8a7a;--ok:#4cd08a;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,sans-serif;line-height:1.7;min-height:100vh}
+.wrap{max-width:480px;margin:0 auto;padding:16px}
+h1,h2,h3{margin:0}
+.logo{font-weight:800;font-size:24px;letter-spacing:-.5px}
+.logo i{font-style:normal;background:var(--ink);border-radius:8px;padding:0 8px;margin-inline-start:6px;color:#f5b428}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:16px}
+label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
+input,select{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.btn{width:100%;font:inherit;font-weight:600;border:0;border-radius:12px;padding:13px;margin-top:16px;background:var(--brand);color:var(--brand-ink);cursor:pointer}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line);margin-top:8px}
+.btn.danger{color:var(--err)}
+.err{color:var(--err);font-size:13px;min-height:20px;margin-top:8px}
+.mute{color:var(--mute)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+header.top{display:flex;align-items:center;justify-content:space-between}
+.avatar{width:44px;height:44px;border-radius:50%;border:2px solid var(--accent);background:var(--card);color:var(--ink);font:inherit;font-weight:800;font-size:18px;cursor:pointer}
+.menu{position:absolute;top:70px;inset-inline-start:16px;width:min(300px,calc(100% - 32px));background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:5;overflow:hidden}
+.menu .who{padding:14px 16px;border-bottom:1px solid var(--line)}
+.menu .who b{display:block}.menu .who span{font-size:13px;color:var(--mute);word-break:break-all}
+.menu button{display:block;width:100%;text-align:start;font:inherit;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 16px;color:var(--ink);cursor:pointer}
+.menu button:last-child{border:0;color:var(--err)}
+.hide{display:none!important}
+.sw{font:inherit;font-weight:600;border:1px solid var(--line);border-radius:999px;padding:8px 18px;background:var(--bg);color:var(--mute);cursor:pointer;min-width:96px}
+.sw.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.sw:disabled{opacity:.6;cursor:default}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.stats div{background:var(--bg);border-radius:12px;padding:10px;text-align:center}
+.stats b{display:block;font-size:20px;color:var(--brand)}
+.stats small{color:var(--mute)}
+.price{text-align:center;padding:14px;border-radius:12px;background:var(--bg);margin-top:14px}
+.price b{font-size:28px;display:block;color:var(--brand)}
+.price small{color:var(--mute)}
+.badge{display:inline-block;font-size:13px;font-weight:600;padding:2px 12px;border-radius:999px;background:var(--accent);color:#12302e}
+.links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.links a{display:block;text-align:center;text-decoration:none;font-weight:600;border:1px solid var(--line);border-radius:10px;padding:10px 4px;color:var(--ink)}
+.panel{position:fixed;inset:0;background:var(--bg);z-index:10;overflow:auto;padding:16px}
+.panel .in{max-width:480px;margin:0 auto}
+.item{padding:12px 0;border-bottom:1px solid var(--line)}
+.item small{color:var(--mute);display:block}
+a.call{color:var(--brand);font-weight:600;text-decoration:none;direction:ltr;unicode-bidi:embed}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;z-index:20;max-width:90%;text-align:center}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+/* ====== تنظیمات Supabase ======
+   قبل از اجرا، فایل supabase-setup.sql را یک بار در SQL Editor اجرا کنید.
+   فقط کلید publishable/anon اینجا قرار می‌گیرد؛ کلید secret/service_role را هرگز نگذارید. */
+const SUPABASE_URL="https://pujfzkkwvuivsejgzvoa.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_WpUCN-na0WtSjDOyOiuvog_GC5rsKrV";
+const SUPPORT=["09909360 97".replace(" ",""),"02144785143"];
+const sb=(SUPABASE_URL&&SUPABASE_ANON_KEY&&window.supabase)?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+const cfgMsg=!SUPABASE_URL||!SUPABASE_ANON_KEY?"آدرس پروژه یا کلید Supabase تنظیم نشده است (ابتدای اسکریپت).":!window.supabase?"کتابخانه Supabase بارگذاری نشد؛ اینترنت را بررسی کنید.":"";
+const fa=n=>Number(n).toLocaleString("fa-IR");
+const $=s=>document.querySelector(s);
+const digits=s=>s.replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).trim();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const num=s=>+digits(s).replace(/\D/g,"");
+const RS="*, passenger:profiles!rides_passenger_id_fkey(name,phone)";
+const ACT=["accepted","arrived","started"];
+let me=null,mode="register",active=null,reqs=[],stats=null,sig="",fin=false,poller=null,notice="";
+
+function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),3000)}
+async function q(p){const{data,error}=await p;if(error)throw error;return data}
+function fe(e){const m=(e&&e.message)||"";
+  if(/Invalid login/i.test(m))return"ایمیل یا رمز عبور درست نیست.";
+  if(/already registered/i.test(m))return"با این ایمیل قبلاً ثبت‌نام شده است.";
+  if(/not confirmed/i.test(m))return"ایمیل شما هنوز تأیید نشده است؛ لینک ارسال‌شده را باز کنید.";
+  if(/rate limit/i.test(m))return"تعداد تلاش‌ها زیاد بود؛ کمی بعد دوباره امتحان کنید.";
+  if(/rides_one_active/i.test(m))return"شما یک سفر فعال دارید.";
+  if(/fetch|network/i.test(m))return"اتصال به سرور برقرار نشد.";
+  return/[\u0600-\u06FF]/.test(m)?m:"خطا: "+m}
+async function logout(){me=null;active=null;reqs=[];stats=null;sig="";fin=false;clearInterval(poller);try{if(sb)await sb.auth.signOut()}catch(e){}auth()}
+if(sb)sb.auth.onAuthStateChange(ev=>{if(ev==="SIGNED_OUT"&&me){me=null;clearInterval(poller);notice="نشست شما تمام شد؛ دوباره وارد شوید.";auth()}});
+
+async function boot(){
+  if(!sb)return auth();
+  try{const{data:{session}}=await sb.auth.getSession();session?await enter(session.user):auth()}
+  catch(e){notice=fe(e);auth()}
+}
+async function enter(u){
+  try{
+    me=await q(sb.from("profiles").select("*").eq("id",u.id).single());
+    if(me.role!=="driver"){me=null;await sb.auth.signOut();notice="این حساب مربوط به آیون اپ (مسافر) است؛ با حساب سفیر وارد شوید.";return auth()}
+    home();
+  }catch(e){me=null;notice=fe(e);auth()}
+}
+
+/* ---------- ورود و ثبت‌نام ---------- */
+function auth(){
+  const reg=mode=="register";
+  $("#app").innerHTML=`
+  <div style="text-align:center;margin-top:24px"><div class="logo">آیون<i>سفیر</i></div><p style="color:var(--mute);margin:6px 0 0">درخواست مسافران را بپذیرید و سفر را مدیریت کنید</p></div>
+  <div class="card">
+    ${reg?`<label>نام و نام خانوادگی</label><input id="name" autocomplete="name">
+    <label>شماره موبایل</label><input id="phone" inputmode="tel" placeholder="09123456789" autocomplete="tel">`:""}
+    <label>ایمیل</label><input id="email" type="email" dir="ltr" ${reg?'placeholder="name@example.com"':""}>
+    ${reg?`<label>مدل خودرو</label><input id="car" placeholder="مثلاً پژو ۲۰۶ سفید">
+    <label>شماره پلاک</label><input id="plate" placeholder="مثلاً ۱۲ ب ۳۴۵ ایران ۶۷">`:""}
+    <label>رمز عبور</label><input id="pass" type="password" autocomplete="${reg?"new-password":"current-password"}">
+    <div class="err" id="err">${esc(notice||cfgMsg)}</div>
+    <button class="btn" id="go">${reg?"ثبت‌نام سفیر و ورود":"ورود به حساب"}</button>
+    <button class="btn alt" id="sw2">${reg?"قبلاً ثبت‌نام کرده‌ام":"ثبت‌نام سفیر جدید"}</button>
+  </div>`;
+  notice="";
+  $("#go").onclick=submitAuth;
+  $("#sw2").onclick=()=>{mode=reg?"login":"register";auth()};
+}
+
+async function submitAuth(){
+  const v=id=>($("#"+id)?digits($("#"+id).value):"");
+  const name=$("#name")?$("#name").value.trim():"",phone=v("phone"),email=v("email").toLowerCase(),pass=$("#pass").value;
+  const car=$("#car")?$("#car").value.trim():"",plate=$("#plate")?$("#plate").value.trim():"";
+  const err=m=>$("#err").textContent=m;
+  if(!sb)return err(cfgMsg);
+  if(mode=="register"&&name.split(/\s+/).length<2)return err("نام و نام خانوادگی را کامل وارد کنید.");
+  if(mode=="register"&&!/^09\d{9}$/.test(phone))return err("شماره موبایل باید ۱۱ رقم و با ۰۹ شروع شود.");
+  if(!/^\S+@\S+\.\S+$/.test(email))return err("ایمیل معتبر وارد کنید.");
+  if(mode=="register"&&car.length<2)return err("مدل خودرو را وارد کنید.");
+  if(mode=="register"&&plate.length<4)return err("شماره پلاک را وارد کنید.");
+  if(pass.length<6)return err("رمز عبور باید حداقل ۶ کاراکتر باشد.");
+  const b=$("#go");b.disabled=true;err("");
+  try{
+    if(mode=="register"){
+      const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{role:"driver",name,phone,car,plate}}});
+      if(error)throw error;
+      if(!data.session){mode="login";notice="ثبت‌نام انجام شد. ایمیل خود را تأیید کنید و سپس وارد شوید.";return auth()}
+      await enter(data.user);
+    }else{
+      const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error)throw error;
+      await enter(data.user);
+    }
+  }catch(e){err(fe(e));b.disabled=false}
+}
+
+/* ---------- صفحه اصلی ---------- */
+function home(){
+  $("#app").innerHTML=`
+  <header class="top">
+    <button class="avatar" id="av" aria-label="پروفایل">${esc((me.name||"؟").trim()[0])}</button>
+    <div class="logo">آیون<i>سفیر</i></div>
+  </header>
+  <div class="menu hide" id="menu">
+    <div class="who"><b>${esc(me.name)}</b><span>${esc(me.email||"")}</span></div>
+    <button data-p="earn">درآمد من</button>
+    <button data-p="settle">تسویه حساب</button>
+    <button data-p="trips">سفرهای انجام‌شده</button>
+    <button data-p="support">پیام به پشتیبانی</button>
+    <button data-p="about">درباره آیون سفیر</button>
+    <button id="out">خروج از حساب</button>
+  </div>
+  <div class="card" id="st"></div>
+  <div id="main"></div>`;
+  $("#av").onclick=()=>$("#menu").classList.toggle("hide");
+  $("#menu").onclick=e=>{const p=e.target.dataset.p;if(p){$("#menu").classList.add("hide");panel(p)}};
+  $("#out").onclick=logout;
+  $("#main").onclick=e=>{const b=e.target.closest("[data-a]");if(b)act(b.dataset.a,b)};
+  active=null;reqs=[];stats=null;sig="";fin=false;
+  head();tick(true);clearInterval(poller);poller=setInterval(tick,4000);
+}
+
+function head(){
+  if(!$("#st"))return;
+  const s=stats||{today_trips:0,today_income:0};
+  $("#st").innerHTML=`
+    <div class="row">
+      <div><h2 style="font-size:19px">${me.online?"آنلاین هستید":"آفلاین هستید"}</h2>
+      <small class="mute">${esc(me.car||"")} · پلاک ${esc(me.plate||"")}</small></div>
+      <button class="sw ${me.online?"on":""}" id="swt" role="switch" aria-checked="${!!me.online}" ${active?"disabled":""}>${me.online?"آنلاین":"آفلاین"}</button>
+    </div>
+    <div class="stats"><div><b>${fa(s.today_trips)}</b><small>سفر امروز</small></div><div><b>${fa(s.today_income)}</b><small>درآمد امروز (تومان)</small></div></div>`;
+  $("#swt").onclick=async()=>{
+    const b=$("#swt");b.disabled=true;
+    try{await q(sb.rpc("set_online",{p_online:!me.online}));me.online=!me.online;sig="x";head();tick()}
+    catch(e){toast(fe(e));b.disabled=false}
+  };
+}
+async function loadStats(){try{stats=await q(sb.rpc("driver_stats"));head()}catch(e){}}
+
+async function tick(first){
+  if(!me)return;
+  try{
+    const a=(await q(sb.from("rides").select(RS).eq("driver_id",me.id).in("status",ACT).limit(1)))[0]||null;
+    const l=!a&&me.online?await q(sb.from("rides").select("*").eq("status","pending").order("created_at").limit(20)):[];
+    const s=JSON.stringify([a&&[a.id,a.status,a.price],l.map(x=>x.id)]);
+    if(!first&&s===sig)return;
+    const was=active;
+    sig=s;active=a;reqs=l;if(!a)fin=false;
+    head();main();
+    if(first||was&&!a)loadStats();
+  }catch(e){if(first){toast(fe(e));main()}}
+}
+
+function main(){
+  const m=$("#main");if(!m)return;
+  if(active)return fin?finishView():activeView();
+  if(!me.online){m.innerHTML=`<div class="card"><p class="mute" style="margin:0">برای دریافت سفر، وضعیت خود را روی «آنلاین» بگذارید.</p></div>`;return}
+  if(!reqs.length){m.innerHTML=`<div class="card"><h2 style="font-size:19px">درخواست‌ها</h2><p class="mute" style="margin:6px 0 0">درخواست جدیدی نیست. به‌محض رسیدن درخواست، اینجا نمایش داده می‌شود.</p></div>`;return}
+  m.innerHTML=reqs.map(r=>`<div class="card" data-id="${esc(r.id)}">
+    <div class="row"><h2 style="font-size:19px">درخواست جدید</h2><small class="mute">${r.km?fa(r.km)+" کیلومتر":""}</small></div>
+    <div class="item"><small>مسافر</small><b>${esc(r.passenger_name||"مسافر")}</b></div>
+    <div class="item"><small>مبدأ</small>${esc(r.from_name)}</div>
+    <div class="item"><small>مقصد</small>${esc(r.to_name)}</div>
+    <div class="links">
+      <a target="_blank" rel="noopener" href="${mapLink(null,pt(r,"to"),pt(r,"from"))}">مسیر سفر</a>
+      <a target="_blank" rel="noopener" href="${mapLink(null,pt(r,"from"))}">مسیر من تا مبدأ</a>
+    </div>
+    <label>کرایه (تومان)</label><input class="pr" inputmode="numeric" value="${r.price||""}">
+    <label>زمان رسیدن به مبدأ</label>
+    <select class="eta">${[3,5,10,15,20].map(n=>`<option value="${n}" ${n==5?"selected":""}>حدود ${fa(n)} دقیقه</option>`).join("")}</select>
+    <div class="err"></div>
+    <button class="btn" data-a="accept">پذیرفتن سفر</button>
+    <button class="btn alt danger" data-a="reject">رد درخواست</button>
+  </div>`).join("");
+}
+
+const pt=(r,k)=>r[k+"_lat"]!=null?`${r[k+"_lat"]},${r[k+"_lng"]}`:r[k+"_name"];
+const mapLink=(o,d,from)=>`https://www.google.com/maps/dir/?api=1${(from||o)?`&origin=${encodeURIComponent(from||o)}`:""}&destination=${encodeURIComponent(d)}&travelmode=driving`;
+
+function activeView(){
+  const a=active,toStart=a.status!="started",P=a.passenger||{name:a.passenger_name||"مسافر",phone:""};
+  const lab={accepted:"در مسیر مبدأ",arrived:"منتظر مسافر",started:"در حال سفر"};
+  const nxt={accepted:"رسیدم به مبدأ",arrived:"شروع سفر",started:"پایان سفر"};
+  $("#main").innerHTML=`<div class="card">
+    <div class="row"><h2 style="font-size:19px">سفر فعال</h2><span class="badge">${lab[a.status]||a.status}</span></div>
+    <div class="item"><small>مسافر</small><b>${esc(P.name)}</b> · <a class="call" href="tel:${esc(P.phone||"")}">${esc(P.phone||"")}</a></div>
+    <div class="item"><small>مبدأ</small>${esc(a.from_name)}</div>
+    <div class="item"><small>مقصد</small>${esc(a.to_name)}</div>
+    <div class="price"><small>کرایه توافقی</small><b>${fa(a.price)} تومان</b></div>
+    <div class="links">
+      <a target="_blank" rel="noopener" href="${mapLink(null,pt(a,toStart?"from":"to"))}">${toStart?"مسیر تا مبدأ":"مسیر تا مقصد"}</a>
+      <a href="tel:${esc(P.phone||"")}">تماس با مسافر</a>
+    </div>
+    <div class="err" id="perr"></div>
+    <button class="btn" data-a="next">${nxt[a.status]}</button>
+    <button class="btn alt danger" data-a="cancel">لغو سفر</button>
+  </div>`;
+}
+
+function finishView(){
+  $("#main").innerHTML=`<div class="card">
+    <h2 style="font-size:19px">پایان سفر</h2>
+    <p class="mute" style="margin:6px 0 0">${esc(active.from_name)} ← ${esc(active.to_name)}</p>
+    <label>کرایه نهایی دریافتی (تومان)</label><input id="fp" inputmode="numeric" value="${active.price}">
+    <div class="err" id="perr"></div>
+    <button class="btn" data-a="done">ثبت سفر</button>
+    <button class="btn alt" data-a="back">بازگشت</button>
+  </div>`;
+}
+
+/* ---------- عملیات ---------- */
+async function act(a,btn){
+  const card=btn.closest("[data-id]"),err=m=>{const e=(card||$("#main")).querySelector(".err");if(e)e.textContent=m};
+  const post=async p=>{btn.disabled=true;err("");try{await q(p);return true}catch(e){err(fe(e));btn.disabled=false;tick();return false}};
+  if(a=="accept"){
+    const price=num(card.querySelector(".pr").value);
+    if(!price)return err("کرایه را وارد کنید.");
+    if(await post(sb.rpc("accept_ride",{p_id:card.dataset.id,p_price:price,p_eta:+card.querySelector(".eta").value}))){sig="x";tick()}
+  }
+  else if(a=="reject"){
+    if(await post(sb.rpc("reject_ride",{p_id:card.dataset.id}))){sig="x";tick()}
+  }
+  else if(a=="next"){
+    if(active.status=="started"){fin=true;return main()}
+    if(await post(sb.rpc("set_ride_status",{p_id:active.id,p_status:active.status=="accepted"?"arrived":"started"}))){sig="x";tick()}
+  }
+  else if(a=="back"){fin=false;main()}
+  else if(a=="done"){
+    const price=num($("#fp").value);
+    if(!price)return err("کرایه نهایی را وارد کنید.");
+    if(await post(sb.rpc("set_ride_status",{p_id:active.id,p_status:"done",p_price:price}))){fin=false;sig="x";toast("سفر ثبت شد.");tick()}
+  }
+  else if(a=="cancel"){
+    if(!confirm("سفر لغو شود؟"))return;
+    if(await post(sb.rpc("cancel_ride",{p_id:active.id}))){fin=false;sig="x";tick()}
+  }
+}
+
+/* ---------- پنل‌ها ---------- */
+async function panel(p){
+  let t="",b="";
+  if(p=="support"){t="پیام به پشتیبانی";b=`<p>برای ارتباط با پشتیبانی تماس بگیرید یا پیام بدهید:</p>`+SUPPORT.map(n=>`<div class="item"><a class="call" href="tel:${n}">${n}</a></div>`).join("")}
+  if(p=="earn"){t="درآمد من";b=`<div id="pl"><p class="mute">در حال بارگذاری…</p></div>`}
+  if(p=="settle"){t="تسویه حساب";b=`<div id="pl"><p class="mute">در حال بارگذاری…</p></div>`}
+  if(p=="trips"){t="سفرهای انجام‌شده";b=`<div id="pl"><p class="mute">در حال بارگذاری…</p></div>`}
+  if(p=="about"){t="درباره آیون سفیر";b=`<p>آیون سفیر برنامه سفیران آیون اپ است. درخواست مسافر را می‌بینید، کرایه و زمان رسیدن را مشخص می‌کنید و سفرها و درآمدتان را دنبال می‌کنید.</p><p class="mute">نسخه ۲٫۱</p>`}
+  const d=document.createElement("div");d.className="panel";
+  d.innerHTML=`<div class="in"><h2 style="margin:8px 0 16px">${t}</h2>${b}<button class="btn alt" id="bk">بازگشت</button></div>`;
+  d.querySelector("#bk").onclick=()=>d.remove();document.body.append(d);
+  const pl=d.querySelector("#pl");if(!pl)return;
+  try{
+    if(p=="settle"){
+      const s=await q(sb.rpc("settlement_preview"));
+      const fmt=v=>v.replace(/\d{4}(?=\d)/g,"$& ");
+      if(s.pending){
+        pl.innerHTML=`<div class="card" style="margin-top:0"><b>درخواست تسویه شما در انتظار پرداخت است</b>
+          <div class="item"><small>تعداد سفر</small>${fa(s.pending.trips)}</div>
+          <div class="item"><small>مبلغ</small><b>${fa(s.pending.amount)} تومان</b></div>
+          <div class="item"><small>شماره کارت</small><span dir="ltr">${esc(fmt(s.pending.card_number))}</span></div>
+          <div class="item"><small>صاحب کارت</small>${esc(s.pending.card_holder)}</div></div>`;
+        return;
+      }
+      pl.innerHTML=`<div class="price" style="margin-top:0"><small>مبلغ قابل تسویه</small><b>${fa(s.amount)} تومان</b><small>${fa(s.trips)} سفر انجام‌شده</small></div>
+        <label>نام و نام خانوادگی صاحب کارت</label><input id="sn" autocomplete="name">
+        <label>شماره کارت (۱۶ رقم)</label><input id="sc" inputmode="numeric" dir="ltr" maxlength="19" placeholder="6037 0000 0000 0000">
+        <div class="err" id="se"></div>
+        <button class="btn" id="sb" ${s.amount>0?"":"disabled"}>ارسال درخواست تسویه</button>
+        ${s.amount>0?"":'<p class="mute" style="margin:8px 0 0">فعلاً مبلغی برای تسویه ندارید.</p>'}`;
+      $("#sc").oninput=e=>{const d=digits(e.target.value).replace(/\D/g,"").slice(0,16);e.target.value=d.replace(/(\d{4})(?=\d)/g,"$1 ")};
+      $("#sb").onclick=async()=>{
+        const name=$("#sn").value.trim(),card=digits($("#sc").value).replace(/\D/g,""),se=$("#se");
+        if(name.split(/\s+/).length<2)return se.textContent="نام و نام خانوادگی را کامل وارد کنید.";
+        if(!/^\d{16}$/.test(card))return se.textContent="شماره کارت باید ۱۶ رقم باشد.";
+        const b=$("#sb");b.disabled=true;se.textContent="";
+        try{
+          await q(sb.rpc("request_settlement",{p_card:card,p_name:name}));
+          pl.innerHTML=`<div class="card" style="margin-top:0"><b>درخواست تسویه ارسال شد</b><p class="mute" style="margin:6px 0 0">پس از پرداخت، مبلغ به کارت شما واریز می‌شود.</p></div>`;
+          toast("درخواست ارسال شد.");
+        }catch(e){se.textContent=fe(e);b.disabled=false}
+      };
+    }else if(p=="earn"){
+      const s=await q(sb.rpc("driver_stats"));
+      pl.innerHTML=`<div class="item"><small>امروز</small><b>${fa(s.today_income)} تومان</b> · ${fa(s.today_trips)} سفر</div>
+        <div class="item"><small>مجموع</small><b>${fa(s.total_income)} تومان</b> · ${fa(s.total_trips)} سفر</div>`;
+    }else{
+      const l=await q(sb.from("rides").select(RS).eq("driver_id",me.id).order("created_at",{ascending:false}).limit(50));
+      pl.innerHTML=l.length?l.map(x=>`<div class="item"><b>${esc(x.from_name)} ← ${esc(x.to_name)}</b><small>${esc((x.passenger||{}).name||x.passenger_name||"")} · ${fa(x.price)} تومان · ${x.status=="done"?"انجام شد":x.status=="cancelled"?"لغو شد":x.status} · ${new Date(x.created_at).toLocaleString("fa-IR")}</small></div>`).join(""):`<p class="mute">هنوز سفری ثبت نشده است. بعد از پایان هر سفر، اینجا می‌بینید.</p>`;
+    }
+  }catch(e){pl.innerHTML=`<p class="err">${esc(fe(e))}</p>`}
+}
+boot();
+</script>
+</body>
+</html>
